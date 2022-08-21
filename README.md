@@ -7,8 +7,10 @@ You need to have docker-compose installed.
 https://docs.docker.com/engine/install/ubuntu/
 
 
-We run our installation in /opt
-make sure to match permissions
+We run our installation on ubuntu in /opt
+
+Make sure to match permissions
+
 
 chown 1000:1000 acala
 chmod 777 acala
