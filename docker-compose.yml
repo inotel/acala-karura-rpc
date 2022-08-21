@@ -1,0 +1,350 @@
+version: "3.3"
+
+services:
+  acala:
+    container_name: acala
+    image: acala/acala-node:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 12G
+    #    ports:
+    #      - 9933:9933
+    #      - 30333:30333
+    #      - 9944:9944
+    command:
+      --chain acala
+      --pruning=archive
+      -d /acala/
+      --state-cache-size=1
+      --name Inotel02
+      --port 30333
+      --rpc-port 9933
+      --ws-port 9944
+      --execution wasm
+      --prometheus-external
+      --rpc-external
+      --ws-external
+      --unsafe-ws-external
+      --unsafe-rpc-external
+      --rpc-cors all
+      #      --
+      #      --port=30334
+      #      --rpc-port=9934
+      #      --ws-port=9945
+      #      --prometheus-external
+      #      --rpc-external
+      #      --ws-external
+      #      --unsafe-ws-external
+      #      --unsafe-rpc-external
+      #      --rpc-cors=all
+      #      --name="Inotel (Embedded Relay)a"
+    volumes:
+      - /opt/acala:/acala
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - acala
+
+#https://hub.docker.com/r/acala/eth-rpc-adapter/tags
+  acala-eth-rpc-adapter:
+    container_name: acala-eth-rpc-adapter
+#    image: acala/eth-rpc-adapter:bdda05c
+    image: acala/eth-rpc-adapter:a8fb1e7
+    restart: always
+    #    ports:
+    #      - 8545:8545
+    #      - 8546:8546
+    environment:
+      - HTTP_PORT=8545
+      - WS_PORT=8546
+      - ENDPOINT_URL=ws://acala:9944
+      - SAFE_MODE=1
+    depends_on:
+      - acala
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - acala
+
+
+
+  acala-postgres:
+    image: postgres:12-alpine
+#    ports:
+#      - 5432:5432
+    volumes:
+      - acala-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    depends_on:
+      - acala
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - acala
+
+  acala-subquery-node:
+    image: onfinality/subql-node:v1.7.0
+    depends_on:
+      - acala-postgres
+      - acala
+ #   ports:
+ #     - 3000:3000
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: acala-postgres
+      DB_PORT: 5432
+    volumes:
+      - /opt/subquery_acala/bodhi.js/evm-subql:/app
+    command:
+      - -f=/app
+      - --network-endpoint=ws://acala:9944
+      - --db-schema=acala_evm
+      - --log-level=debug
+      - --unsafe
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - acala
+
+  acala-graphql-engine:
+    image: onfinality/subql-query:v1.4.0
+#    ports:
+#      - 3001:3001
+    depends_on:
+      - acala-postgres
+      - acala-subquery-node
+      - acala
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: acala-postgres
+      DB_PORT: 5432
+      PORT: 3001
+    command:
+      - --name=acala_evm
+      - --playground
+      - --indexer=http://acala-subquery-node:3000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - acala
+
+
+
+#KARURA
+  karura:
+    container_name: karura
+    image: acala/karura-node:latest
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+    #    ports:
+    #      - 9934:9933
+    #      - 30334:30333
+    #      - 9945:9944
+    command:
+            #      --memory=24G
+            #      --oom-kill-disable
+      --chain=karura
+      --execution=wasm
+      --pruning=archive
+      -d /karura/
+      --state-cache-size=1
+      --ws-port=9944
+      --ws-external
+      --rpc-external
+      --rpc-cors=all
+      --name=Inotel02
+      --port=30333
+      --rpc-port=9933
+      --prometheus-external
+      --unsafe-ws-external
+      --unsafe-rpc-external
+      #      --
+      #      --port=30334
+      #      --rpc-port=9934
+      #      --ws-port=9945
+      #      --prometheus-external
+      #      --rpc-external
+      #      --ws-external
+      #      --unsafe-ws-external
+      #      --unsafe-rpc-external
+      #      --rpc-cors=all
+      #      --name="Inotel (Embedded Relay)"
+    volumes:
+      - /opt/karura:/karura
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - karura
+
+#https://hub.docker.com/r/acala/eth-rpc-adapter/tags
+  karura-eth-rpc-adapter:
+    container_name: karura-eth-rpc-adapter
+    image: acala/eth-rpc-adapter:a8fb1e7
+#    image: acala/eth-rpc-adapter:bdda05c
+    restart: always
+    #    ports:
+    #      - 8545:8545
+    #      - 8546:8546
+    environment:
+      - HTTP_PORT=8545
+      - WS_PORT=8546
+      - ENDPOINT_URL=ws://karura:9944
+      - SAFE_MODE=1
+    depends_on:
+      - karura
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - karura
+
+  karura-postgres:
+    image: postgres:12-alpine
+#    ports:
+#      - 5432:5432
+    volumes:
+      - karura-postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    depends_on:
+      - karura
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - karura
+
+  karura-subquery-node:
+    image: onfinality/subql-node:v1.7.0
+    depends_on:
+      - karura-postgres
+      - karura
+ #   ports:
+ #     - 3000:3000
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: karura-postgres
+      DB_PORT: 5432
+    volumes:
+      - /opt/subquery_karura/bodhi.js/evm-subql:/app
+    command:
+      - -f=/app
+      - --network-endpoint=ws://karura:9944
+      - --db-schema=acala_evm
+      - --log-level=debug
+      - --unsafe
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - karura
+
+  karura-graphql-engine:
+    image: onfinality/subql-query:v1.4.0
+#    ports:
+#      - 3001:3001
+    depends_on:
+      - karura-postgres
+      - karura-subquery-node
+      - karura
+    restart: always
+    environment:
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_DATABASE: postgres
+      DB_HOST: karura-postgres
+      DB_PORT: 5432
+      PORT: 3001
+    command:
+      - --name=acala_evm
+      - --playground
+      - --indexer=http://karura-subquery-node:3000
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - karura
+
+  haproxy:
+    image: haproxy:alpine
+    container_name: haproxy
+    restart: always
+    ports:
+      - "80:80"
+#acala
+      - 9933:9933
+      - 30333:30333
+      - 9944:9944
+#karura
+      - 9934:9933
+      - 30334:30333
+      - 9945:9944
+#karura-eth-rpc-adapter
+      - 8545:8545
+      - 8546:8546
+#acala-eth-rpc-adapter
+      - 8547:8547
+      - 8548:8548
+#acala-graphql-engine
+      - 13001:13001
+#karura-graphql-engine
+      - 13002:13002
+    volumes:
+      - /opt/haproxy:/usr/local/etc/haproxy
+    depends_on:
+      - acala
+      - acala-eth-rpc-adapter
+      - acala-graphql-engine
+      - karura
+      - karura-eth-rpc-adapter
+      - karura-graphql-engine
+
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    networks:
+      - default
+      - acala
+      - karura
+
+networks:
+    acala:
+        driver: bridge
+    karura:
+        driver: bridge
+
+volumes:
+  acala-postgres:
+  karura-postgres:
