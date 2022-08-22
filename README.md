@@ -26,6 +26,10 @@ Deploy subquery
 Check subquery_deploy.sh
 
 
+=====
+Make sure to populate haproxy/inotel.acl with your needed ip's
+
+
 Run acala / karura:
 
 
