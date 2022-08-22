@@ -53,7 +53,9 @@ services:
   acala-eth-rpc-adapter:
     container_name: acala-eth-rpc-adapter
 #    image: acala/eth-rpc-adapter:bdda05c
-    image: acala/eth-rpc-adapter:a8fb1e7
+#    image: acala/eth-rpc-adapter:a8fb1e7
+    image: acala/eth-rpc-adapter:9e79791
+#    aa2c8d7
     restart: always
     #    ports:
     #      - 8545:8545
@@ -63,6 +65,7 @@ services:
       - WS_PORT=8546
       - ENDPOINT_URL=ws://acala:9944
       - SAFE_MODE=1
+      - SUBQL_URL=http://acala-graphql-engine:3001
     depends_on:
       - acala
     logging:
@@ -203,8 +206,10 @@ services:
 #https://hub.docker.com/r/acala/eth-rpc-adapter/tags
   karura-eth-rpc-adapter:
     container_name: karura-eth-rpc-adapter
-    image: acala/eth-rpc-adapter:a8fb1e7
+#    image: acala/eth-rpc-adapter:a8fb1e7
 #    image: acala/eth-rpc-adapter:bdda05c
+    image: acala/eth-rpc-adapter:9e79791
+#    aa2c8d7
     restart: always
     #    ports:
     #      - 8545:8545
@@ -214,6 +219,7 @@ services:
       - WS_PORT=8546
       - ENDPOINT_URL=ws://karura:9944
       - SAFE_MODE=1
+      - SUBQL_URL=http://karura-graphql-engine:3001
     depends_on:
       - karura
     logging:
