@@ -18,7 +18,7 @@ services:
       --pruning=archive
       -d /acala/
       --state-cache-size=1
-      --name Inotel01
+      --name Inotel00
       --port 30333
       --rpc-port 9933
       --ws-port 9944
@@ -176,7 +176,7 @@ services:
       --ws-external
       --rpc-external
       --rpc-cors=all
-      --name=Inotel01
+      --name=Inotel00
       --port=30333
       --rpc-port=9933
       --prometheus-external
