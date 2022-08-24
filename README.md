@@ -39,3 +39,12 @@ docker-compose up -d
 
 docker-compose logs -f
 
+
+NOTE:
+
+If you see :
+
+<benchmark> INFO 0.00 bps, target: #1698989, current: #1324638, estimate time: unknown
+
+in either acala/karura subquery logs, you need to restart the container.
+
